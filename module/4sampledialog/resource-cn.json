@@ -1,0 +1,23 @@
+{
+  "title": "对话框组件",
+  "chooser-file-button": "　选择　",
+  "chooser-file-label": "请选择一个文件",
+  "chooser-files-button": "　选择　",
+  "chooser-files-label": "请选择文件（支持多选）",
+  "chooser-path-button": "　选择　",
+  "chooser-path-label": "请选择文件目录",
+  "file-chooser-hint": "内容提示",
+  "edit-name": "名称",
+  "edit-hint": "输入内容提示",
+  "console-info": "控制台输出",
+  "label-in-fmt": "已选择 %d 个文件",
+  "text-dialog-info": "　提示对话框　",
+  "text-dialog-confirm": "　确认对话框　",
+  "text-dialog-define": "　自定义对话框　",
+  "text-dialog-info-msg": "这是一个提示对话框",
+  "text-dialog-confirm-msg": "这是一个确认对话框",
+  "text-dialog-define-msg": "这是一个自定义对话框",
+  "text-dialog-define-input": "输入",
+  "text-dialog-sub-title": "这里是对话框的显示内容",
+  "text-dialog-sub-hint": "（字母和数字）"
+}

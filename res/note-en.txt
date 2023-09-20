@@ -1,0 +1,9 @@
+
+
+Welcome to TinyUi !
+
+1. If this is your first operation, please read the operation manual (ReadMe.pdf) carefully.
+2. This tool supports Windows/MacOS/Linux platform PC systems.
+
+Copyright: TinyUi
+     Date: 2023.5

@@ -1,0 +1,13 @@
+{
+  "title": "树视图组件",
+  "grid-column-1": "列表项1",
+  "grid-column-1-hint": "（输入新增加第1项内容）",
+  "grid-column-2": "列表项2",
+  "grid-column-2-hint": "（输入新增加第2项内容）",
+  "grid-column-3": "列表项3",
+  "grid-column-3-hint": "（输入新增加第3项内容）",
+  "edit-name": "名称",
+  "edit-hint": "输入内容提示",
+  "console-info": "控制台输出",
+  "label-in-fmt": "已选择 %d 个文件"
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Basic Components",
+  "edit-notmal": "Editor",
+  "edit-notmal-hint": "(Input text)",
+  "edit-btn": "Editor",
+  "edit-btn-hint": "Setting",
+  "edit-password": "Editor",
+  "edit-password-hint": "(Input password)",
+  "console-info": "Console output here ...",
+  "label-in-fmt": "%d files choosed",
+  "radio-title": "Radio",
+  "radio-type-1": "radio 1",
+  "radio-type-2": "radio 2",
+  "checkbox-title": "Checkbox",
+  "checkbox-type-1": "check 1",
+  "checkbox-type-2": "check 2",
+  "text-label-combox": "Combox"
+}

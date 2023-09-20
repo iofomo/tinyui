@@ -1,0 +1,9 @@
+{
+  "title": "List Components",
+  "grid-column-1": "Editor",
+  "grid-column-1-hint": "(Input new one)",
+  "edit-name": "Name",
+  "edit-hint": "Input tipper",
+  "console-info": "Console output here ...",
+  "label-in-fmt": "%d files choose"
+}

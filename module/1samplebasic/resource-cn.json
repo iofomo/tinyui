@@ -1,0 +1,18 @@
+{
+  "title": "基础组件",
+  "edit-notmal": "　编辑框　",
+  "edit-notmal-hint": "（文本输入）",
+  "edit-btn": "　编辑框　",
+  "edit-btn-hint": "　设置　",
+  "edit-password": "　编辑框　",
+  "edit-password-hint": "（输入密码）",
+  "console-info": "控制台输出",
+  "label-in-fmt": "已选择 %d 个文件",
+  "radio-title": "单选",
+  "radio-type-1": "单选1",
+  "radio-type-2": "单选2",
+  "checkbox-title": "多选",
+  "checkbox-type-1": "勾选1",
+  "checkbox-type-2": "勾选2",
+  "text-label-combox": "下拉列表"
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Tree Components",
+  "grid-column-1": "Column 1",
+  "grid-column-1-hint": "(Input new one for column 1)",
+  "grid-column-2": "Column 2",
+  "grid-column-2-hint": "(Input new one for column 2)",
+  "grid-column-3": "Column 3",
+  "grid-column-3-hint": "(Input new one for column 3)",
+  "edit-name": "Name",
+  "edit-hint": "Input tipper",
+  "console-info": "Console output here ...",
+  "label-in-fmt": "%d files choosed"
+}

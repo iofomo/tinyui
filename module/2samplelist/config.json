@@ -1,0 +1,5 @@
+{
+  "command": "sample_list_command.py",
+  "fragment": "sample_list_fragment.py",
+  "module": "sample_list_module.py"
+}

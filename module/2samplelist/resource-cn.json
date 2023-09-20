@@ -1,0 +1,9 @@
+{
+  "title": "列表组件",
+  "grid-column-1": "编辑",
+  "grid-column-1-hint": "（输入新增加项内容）",
+  "edit-name": "名称",
+  "edit-hint": "输入内容提示",
+  "console-info": "控制台输出",
+  "label-in-fmt": "已选择 %d 个文件"
+}

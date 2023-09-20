@@ -1,0 +1,5 @@
+{
+  "command": "sample_tree_command.py",
+  "fragment": "sample_tree_fragment.py",
+  "module": "sample_tree_module.py"
+}

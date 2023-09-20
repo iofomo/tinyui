@@ -1,0 +1,5 @@
+{
+  "command": "sample_dialog_command.py",
+  "fragment": "sample_dialog_fragment.py",
+  "module": "sample_dialog_module.py"
+}
