@@ -242,6 +242,35 @@ class CmnUtils:
         vn, vc = cls.parseVersion(ver)
         return '%s.%d' % (vn, vc)
 
+    @staticmethod
+    def selectProjects(projects, msg=None):
+        index = 0
+        for project in projects:
+            index += 1
+            if index < 10:
+                LoggerUtils.i('    %d: %s' % (index, project))
+            else:
+                LoggerUtils.i('   %d: %s' % (index, project))
+        LoggerUtils.i('\r\n  ' + ('choose all: <Enter Key>' if CmnUtils.isEmpty(msg) else msg))
+
+        run = CmnUtils.input('  >>>: ')
+        run = run.strip()
+        if CmnUtils.isEmpty(run): return projects
+
+        pp = []
+        ll = len(projects)
+        items = run.split(' ')
+        for item in items:
+            if CmnUtils.isEmpty(item): continue
+            try:
+                index = int(item) - 1
+            except Exception as e:
+                continue
+            if 0 <= index < ll:
+                pp.append(projects[index])
+        return pp
+
+
 class cmn_thread(threading.Thread):
     def __init__(self, _cb, _cbArgs):
          threading.Thread.__init__(self)

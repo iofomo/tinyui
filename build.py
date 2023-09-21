@@ -48,11 +48,12 @@ g_root_remove_dirs = [
 # --------------------------------------------------------------------------------------------------------------------------
 def mktmp(outPath, appName, vn, vc):
     targetPath = outPath + os.path.sep + ('%s_v%s.%d' % (appName, vn, vc))
-    CmnUtils.doCmd('rm -rf ' + targetPath)
+    if os.path.isdir(targetPath):
+        shutil.rmtree(targetPath)
     if os.path.isdir(targetPath):
         LoggerUtils.error('Fail: clear tmp dir')
         return None, None
-    CmnUtils.doCmdEx('cp -rf ' + g_this_path + ' ' + targetPath)
+    shutil.copytree(g_this_path, targetPath)
     if not os.path.isdir(targetPath):
         LoggerUtils.error('Fail: create tmp dir')
         return None, None
@@ -62,33 +63,32 @@ def mktmp(outPath, appName, vn, vc):
 def doCompile(path):
     l = len(path) + 1
     for dirpath, dirnames, filenames in os.walk(path):
-        if dirpath[l:].startswith('.'):
-            CmnUtils.doCmd('rm -rf ' + dirpath)
-            continue
+        for dir in dirnames:
+            if dir != '__pycache__' and not dir.startswith('.'): continue
+            f = os.path.join(dirpath, dir)
+            shutil.rmtree(f)
+            print('ignore: ' + f)
         for filename in filenames:
             fullName = os.path.join(dirpath, filename)
             if filename.startswith('.') or 0 <= fullName[l:].find('/.'):
                 os.remove(fullName)
                 continue
             if len(dirpath) <= l: continue
-            if filename == '__init__.py': continue
-            if filename == 'setup.py': continue
-            if filename == 'setup.pyc':
+            if filename == 'cache.json' or filename.startswith('.'):
                 os.remove(fullName)
                 continue
-            if filename.endswith('.py'):
-                CmnUtils.doCmd('python -m py_compile ' + fullName)
+            if filename.endswith('.pyc'):
                 os.remove(fullName)
                 continue
 
 
-def doFlush(path):
-    CmnUtils.doCmd('rm -f %s/*/*/cache.json' % (path))
-
-
-def zipXxxCallbackIgnoreFiles(fileName, shortFileName):
-    if 0 <= fileName.find('__MACOSX'): return True
-    return False
+def doFlush(path, ignoreModules):
+    modulePath = path + os.sep + 'module'
+    for module in ignoreModules:
+        dirPath = modulePath + os.sep + module
+        if not os.path.isdir(dirPath): continue
+        print('ignore: ' + dirPath)
+        shutil.rmtree(dirPath)
 
 
 def zipIgnoreFilter(targetPath, desZip, filter):
@@ -130,19 +130,42 @@ def doFlushVersion():
     return appName, vn, vc
 
 
+def getOutputPath():
+    if 1 < len(sys.argv): return sys.argv[1]
+    return os.path.dirname(g_this_path) + os.sep + 'out'
+
+
+def getIgnoreModules():
+    if 2 < len(sys.argv) and sys.argv[2] == 'all': return []
+
+    modulePath = g_this_path + os.sep + 'module'
+    dirs = os.listdir(modulePath)
+
+    modules = []
+    for dir in dirs:
+        if dir == '__pycache__': continue
+        dirPath = modulePath + os.sep + dir
+        if not os.path.isdir(dirPath): continue
+        modules.append(dir)
+
+    if CmnUtils.isEmpty(modules): return []
+    mm = CmnUtils.selectProjects(modules)
+    return [i for i in modules if i not in mm]
+
+
 def run():
-    outPath, buildType = sys.argv[1], sys.argv[2]
+    outPath = getOutputPath()
+    ignoreModules = getIgnoreModules()
 
     # update version
     appName, vn, vc = doFlushVersion()
-    print('version: %s, %d -> %d' % (vn, vc - 1, vc))
+    print('Version: %s.%d -> %s.%d' % (vn, vc - 1, vn, vc))
 
     targetPath = mktmp(outPath, appName, vn, vc)
     if CmnUtils.isEmpty(targetPath): return
 
-    CmnUtils.doCmd('cd %s && find . -name "*.pyc" |xargs rm' % g_this_path)
     doCompile(targetPath)
-    doFlush(targetPath)
+    doFlush(targetPath, ignoreModules)
 
     ff = os.listdir(targetPath)
     for f in ff:
