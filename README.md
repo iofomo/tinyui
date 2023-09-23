@@ -3,8 +3,8 @@
 ### Navigation
 
 -   [中文文档](doc/readme-cn.md)
--   [Develop Guide](doc/develop-guide-cn.md)
--   [User Guide](doc/user-guide-cn.md)
+-   [Develop Guide](doc/develop-guide-en.md)
+-   [User Guide](doc/user-guide-en.md)
 
 ### Description
 

@@ -2,8 +2,8 @@
 
 ### Navigation
 
--   [Develop Guide](develop-guide-cn.md)
--   [User Guide](user-guide-cn.md)
+-   [Develop Guide](develop-guide-en.md)
+-   [User Guide](user-guide-en.md)
 
 ### Description
 
