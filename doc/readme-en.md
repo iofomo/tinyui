@@ -1,10 +1,9 @@
-![](doc/readme.assets/15.png)
+![](readme.assets/15.png)
 
 ### Navigation
 
--   [中文文档](doc/readme-cn.md)
--   [Develop Guide](doc/develop-guide-cn.md)
--   [User Guide](doc/user-guide-cn.md)
+-   [Develop Guide](develop-guide-cn.md)
+-   [User Guide](user-guide-cn.md)
 
 ### Description
 
@@ -31,9 +30,9 @@ Due to the simplicity and cross platform development of `Python`,  as well as th
 
 **Application interface :**
 
-![](doc/readme.assets/12.jpg)
-![](doc/readme.assets/13.jpg)
-![](doc/readme.assets/14.jpg)
+![](readme.assets/12.jpg)
+![](readme.assets/13.jpg)
+![](readme.assets/14.jpg)
 
 ##### MacOS
 
@@ -44,26 +43,26 @@ Due to the simplicity and cross platform development of `Python`,  as well as th
 
 **Application interface :**
 
-![](doc/readme.assets/18.png)
-![](doc/readme.assets/19.png)
-![](doc/readme.assets/20.png)
+![](readme.assets/18.png)
+![](readme.assets/19.png)
+![](readme.assets/20.png)
 
 ##### Linux（Ubuntu）
 
 **Operation mode :** 
 
 -   Method 1:  Double click on `tinyui.py` in the file manager or desktop
--   Method 2:  Enter the command `python tinyui.py` in the  terminal
+-   Method 2:  Enter the command `python tinyui.py` in the terminal
 
 **Application interface :**
 
-![](doc/readme.assets/3.png)
-![](doc/readme.assets/2.png)
-![](doc/readme.assets/4.png)
+![](readme.assets/3.png)
+![](readme.assets/2.png)
+![](readme.assets/4.png)
 
 ### LICENSE
 
-This project is licensed under the terms of the `MIT` license. See the [LICENSE](doc/LICENSE) file.
+This project is licensed under the terms of the `MIT` license. See the [LICENSE](LICENSE) file.
 
 >   This project and all `tinyui` tools are open source under the MIT license, which means you have full access to the source code and can modify it to fit your own needs. 
 

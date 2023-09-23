@@ -1,9 +1,9 @@
 
 
-欢迎使用 TinyUi!
+欢迎使用 Tinyui!
 
 1. 如果您是第一次操作，请务必认真阅读操作手册（ReadMe.pdf）。
 2. 本工具支持Windows/MacOS/Linux平台PC系统。
 
-版权：TinyUi
+版权：Tinyui
 时间：2023

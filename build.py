@@ -149,6 +149,7 @@ def getIgnoreModules():
         modules.append(dir)
 
     if CmnUtils.isEmpty(modules): return []
+    modules.sort()
     mm = CmnUtils.selectProjects(modules)
     return [i for i in modules if i not in mm]
 

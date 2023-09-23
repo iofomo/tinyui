@@ -13,18 +13,21 @@ from utils.utils_cmn import CmnUtils
 # ----------------------------------------------------------------------------------------------------------------------
 class XDialog:
     def __init__(self):
-        self.mWindow = Toplevel()
+        self.mRoot = Toplevel()
 
-        screenWidth = self.mWindow.winfo_screenwidth()
-        screenHeight = self.mWindow.winfo_screenheight()
+        self.mWindow = PanedWindow(self.mRoot, orient=VERTICAL)
+        self.mWindow.pack(fill=BOTH)
+
+        screenWidth = self.mRoot.winfo_screenwidth()
+        screenHeight = self.mRoot.winfo_screenheight()
 
         w, h = self.getWindowSize()
         x = int((screenWidth - w) / 2)
         y = int((screenHeight - h) / 2)
 
         title = self.getTitle()
-        if not CmnUtils.isEmpty(title): self.mWindow.title(title)
-        self.mWindow.geometry("%sx%s+%s+%s" % (w, h, x, y))
+        if not CmnUtils.isEmpty(title): self.mRoot.title(title)
+        self.mRoot.geometry("%sx%s+%s+%s" % (w, h, x, y))
         # The setting window size cannot be changed
         # self.mWindow.resizable(0, 0)
 
@@ -32,14 +35,14 @@ class XDialog:
     def getTitle(self): return None
 
     def onCreateDialog(self):
-        self.mWindow.protocol('WM_DELETE_WINDOW', self.mWindow.quit)
+        self.mRoot.protocol('WM_DELETE_WINDOW', self.mRoot.quit)
 
     def show(self):
         self.onCreateDialog()
-        self.mWindow.focus_set()
-        self.mWindow.grab_set()
-        self.mWindow.mainloop()
-        self.mWindow.destroy()
+        self.mRoot.focus_set()
+        self.mRoot.grab_set()
+        self.mRoot.mainloop()
+        self.mRoot.destroy()
         return self.getResults()
 
     def getResults(self): return None
@@ -47,4 +50,4 @@ class XDialog:
     def doAction(self, id): pass
 
     def close(self):
-        self.mWindow.quit()
+        self.mRoot.quit()
