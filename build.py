@@ -36,8 +36,8 @@ g_this_path = os.path.dirname(g_this_file)
 
 g_root_keep_files = [
     'tinyui.py',
-    'tinyui-win.bat',
-    'tinyui-mac.command',
+    'tinyui-win.exe',
+    'tinyui-mac',
     'ReadMe.pdf',
 ]
 g_root_remove_dirs = [
