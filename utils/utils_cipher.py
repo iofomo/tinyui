@@ -1,10 +1,9 @@
-# !/usr/bin/framework python
-# -*- encoding:utf-8 -*-
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
 # @brief:  utils for data or file cipher
 # @date:   2023.08.10 14:40:50
 
-import hashlib
-import os
+import os, sys, hashlib
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -81,11 +80,11 @@ class CipherUtils:
 
     @staticmethod
     def getUnique(v):
-        '''
+        """
         like with: c/java/python
         :param v: string
         :return:
-        '''
+        """
         l = len(v)
         if l <= 0: return 0, 0
         f = ord(v[0]) | (ord(v[l >> 1]) << 6) | (ord(v[l - 1]) << 12) | (l << 20);
@@ -97,11 +96,3 @@ class CipherUtils:
             h ^= g;
             h ^= g >> 24;
         return h, f
-
-
-def run():
-    pass
-
-
-if __name__ == "__main__":
-    run()

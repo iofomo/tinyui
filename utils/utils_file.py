@@ -1,17 +1,14 @@
-# -*- encoding:utf-8 -*-
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
 # @brief:  utils for file I/O
 # @date:   2023.08.10 14:40:50
 
-import json
-import os
-import shutil
-import time
+import os, sys, time, json, shutil
 from fnmatch import fnmatchcase
-
 from utils.utils_logger import LoggerUtils
 from utils.utils_cmn import CmnUtils
 
-# --------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------
 class FileUtils:
     g_temp_file_index = 0
 
@@ -60,7 +57,7 @@ class FileUtils:
         return name + tail
 
     @staticmethod
-    def getUniqueFile(name, suffix = ''):
+    def getUniqueFile(name, suffix=''):
         """
         :param name: /home/demo.txt
         :return: /home/demo(1).txt
@@ -101,7 +98,7 @@ class FileUtils:
     @staticmethod
     def saveJsonToFile(name, content):
         try:
-            #json.dumps(content, ensure_ascii=False)
+            # json.dumps(content, ensure_ascii=False)
             jcntt = json.dumps(content)
             path = os.path.dirname(name)
             if not os.path.isdir(path): os.makedirs(path)
@@ -116,7 +113,7 @@ class FileUtils:
         FileUtils.ensureDir(path)
         name = 'log_' + time.strftime('%Y%m%d_%H%M%S')
         fullName = path + os.path.sep + name
-        with open(fullName, 'wb') as f: f.write(msg)
+        with open(fullName, 'w') as f: f.write(msg)
         return fullName
 
     @staticmethod
@@ -133,11 +130,11 @@ class FileUtils:
 
     @staticmethod
     def copyFileByPattern(fromFileFmt, toPath):
-        '''
+        """
         "cp -f /home/out/src/*.jar /home/out/des"
         :param fromFileFmt: "/home/out/src/*.jar"
         :param toPath: "/home/out/des"
-        '''
+        """
         if not os.path.isdir(toPath): os.makedirs(toPath)
 
         fromPath = os.path.dirname(fromFileFmt)
@@ -152,7 +149,7 @@ class FileUtils:
             shutil.copyfile(fileName, toPath + os.sep + f)
 
     @staticmethod
-    def copyDir(fromDir, toDir, cb = None):
+    def copyDir(fromDir, toDir, cb=None):
         if not os.path.exists(toDir): os.makedirs(toDir)
         for f in os.listdir(fromDir):
             fromFile = fromDir + os.sep + f
@@ -163,11 +160,24 @@ class FileUtils:
                 shutil.copy(fromFile, toFile)
 
     @staticmethod
+    def remove_tree(path):
+        if os.path.isdir(path):
+            items = os.listdir(path)
+            for item in items:
+                full_path = os.path.join(path, item)
+                FileUtils.remove_tree(full_path)
+            os.rmdir(path)
+        else:
+            os.remove(path)
+
+    @staticmethod
     def remove(f, rmEmptyDir=True):
         if os.path.isdir(f):
-            try: shutil.rmtree(f)
-            except Exception as e: pass
-        else:
+            try:
+                FileUtils.remove_tree(f)
+            except Exception as e:
+                pass
+        elif os.path.exists(f):
             try:
                 os.remove(f)
                 if not rmEmptyDir: return
@@ -177,7 +187,8 @@ class FileUtils:
                     if os.path.exists(pp): break
                     pp = os.path.dirname(pp)
                     if len(pp) <= 1: break
-            except Exception as e: pass
+            except Exception as e:
+                pass
 
     @staticmethod
     def sizeToString(size):
@@ -198,12 +209,12 @@ class FileUtils:
             s = '%.2f' % (size / 1024.00)
         else:
             return '%d B' % (size)
-        return s + ' ' + tail#.strip('0').strip('.')
+        return s + ' ' + tail  # .strip('0').strip('.')
 
-    START_WITH      = 1
-    END_WITH        = 2
-    EQUAL_WITH      = 3
-    CONTAIN_WITH    = 4
+    START_WITH = 1
+    END_WITH = 2
+    EQUAL_WITH = 3
+    CONTAIN_WITH = 4
 
     @staticmethod
     def replaceLine(typ, fileName, kv):
@@ -215,7 +226,7 @@ class FileUtils:
         newLines = []
         for line in lines:
             l = line.strip()
-            for k,v in kv.items():
+            for k, v in kv.items():
                 if typ == FileUtils.START_WITH:
                     if not l.startswith(k): continue
                     newLines.append(v + '\n')
@@ -237,12 +248,14 @@ class FileUtils:
         # save
         with open(fileName, 'wb') as f: f.writelines(newLines)
 
+
 def run():
     print(FileUtils.sizeToString(20))
     print(FileUtils.sizeToString(124))
     print(FileUtils.sizeToString(1025))
     print(FileUtils.sizeToString(1026))
     print(FileUtils.sizeToString(1337))
+
 
 if __name__ == "__main__":
     run()

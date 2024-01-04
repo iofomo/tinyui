@@ -13,6 +13,10 @@ try:
     from Tkinter import *
 except ImportError:
     from tkinter import *
+try:
+    import tkFont as tkfont
+except ImportError:
+    from tkinter import font as tkfont
 
 from utils.utils_cmn import CmnUtils
 from framework.resource import Resource
@@ -34,13 +38,16 @@ class UiKit:
     @staticmethod
     def createSubWindow(winRoot, orient=HORIZONTAL):
         win = PanedWindow(winRoot, orient=orient)
-        if isinstance(winRoot, Widget): winRoot.add(win)
+        if isinstance(winRoot, Widget) and not isinstance(winRoot, LabelFrame): winRoot.add(win)
         else: win.pack()
         return win
 
     @staticmethod
     def createLayoutButtons(winRoot, leftButtons, rightButtons):
-        win = UiKit.createSubWindow(winRoot)
+        if isinstance(winRoot, LabelFrame):
+            win = winRoot
+        else:
+            win = UiKit.createSubWindow(winRoot)
 
         if leftButtons is not None and 0 < len(leftButtons):
             for leftBtn in leftButtons:
@@ -51,6 +58,26 @@ class UiKit:
             for rightBtn in rightButtons:
                 rightBtn.mLayout = Button(win, text=rightBtn.mLayoutName, command=rightBtn.mLayoutCommand)
                 rightBtn.mLayout.pack(side=RIGHT)
+
+    @staticmethod
+    def createLayoutButtonsWithFrame(winRoot, title, leftButtons, rightButtons):
+        win = UiKit.createSubWindow(winRoot)
+        labelframe = LabelFrame(win, text=title)
+        labelframe.pack(fill="both", ipadx=10, padx=10, pady=10, side=LEFT)
+
+        UiKit.createGap(labelframe, 10)
+        if leftButtons is not None and 0 < len(leftButtons):
+            winSub = UiKit.createSubWindow(labelframe)
+            for leftBtn in leftButtons:
+                leftBtn.mLayout = Button(winSub, text=leftBtn.mLayoutName, command=leftBtn.mLayoutCommand)
+                leftBtn.mLayout.pack(side=LEFT)
+        UiKit.createGap(labelframe, 5)
+        if rightButtons is not None and 0 < len(rightButtons):
+            winSub = UiKit.createSubWindow(labelframe)
+            for rightBtn in rightButtons:
+                rightBtn.mLayout = Button(winSub, text=rightBtn.mLayoutName, command=rightBtn.mLayoutCommand)
+                rightBtn.mLayout.pack(side=LEFT)
+        UiKit.createGap(labelframe, 10)
 
     @staticmethod
     def createLabelEditorPassword(winRoot, txt, valueType=None, hintTxt=None):
@@ -69,10 +96,13 @@ class UiKit:
         return pwd
 
     @staticmethod
-    def createLabel(winRoot, txt, sd='left', fontSize=16):
+    def createLabel(winRoot, txt, sd='left', _font=None):
         # side='top' or 'bottom' or 'left' or 'right'
+        if _font is None:
+            _font = tkfont.Font(family="Arial", size=16)
+
         win = UiKit.createSubWindow(winRoot)
-        lb = Label(win, text=txt, font=("Arial", fontSize))
+        lb = Label(win, text=txt, font=_font)
         lb.pack(side=sd)
 
     @staticmethod
@@ -92,24 +122,47 @@ class UiKit:
         return ed
 
     @staticmethod
-    def createLabelEditorBtn(winRoot, txt, valueType=None, buttonItem=None):
+    def createButtonEditorLabel(winRoot, buttonItem, valueType=None, txt=None):
         win = UiKit.createSubWindow(winRoot)
 
-        lb = Label(win, text=txt)
-        lb.pack(side=LEFT)
+        bt = None
+        if buttonItem is not None:
+            bt = Button(win, text=buttonItem.mLayoutName, command=buttonItem.mLayoutCommand, borderwidth=2)
+            bt.config(relief="raised")
+            bt.pack(side=LEFT)
 
-        if valueType:
+        if valueType is not None:
             ed = Entry(win, textvariable=valueType)
         else:
             ed = Entry(win)
         ed.pack(side=LEFT)
 
+        if txt is not None:
+            lb = Label(win, text=txt, foreground='gray')
+            lb.pack(side=LEFT)
+
+        return ed, bt
+
+    @staticmethod
+    def createLabelEditorButton(winRoot, txt, valueType=None, buttonItem=None):
+        win = UiKit.createSubWindow(winRoot)
+
+        lb = Label(win, text=txt)
+        lb.pack(side=LEFT)
+
+        if valueType is not None:
+            ed = Entry(win, textvariable=valueType)
+        else:
+            ed = Entry(win)
+        ed.pack(side=LEFT)
+
+        bt = None
         if buttonItem is not None:
             bt = Button(win, text=buttonItem.mLayoutName, command=buttonItem.mLayoutCommand, borderwidth=2)
             bt.config(relief="raised")
             bt.pack(side=LEFT)
-            return ed, bt
-        return ed, None
+
+        return ed, bt
 
     @staticmethod
     def createLabelCombox(winRoot, values, lbTxt=None):
@@ -219,6 +272,14 @@ class UiKit:
         return btn
 
     @staticmethod
+    def createButtonLabel(winRoot, buttonItem, labelText):
+        win = UiKit.createSubWindow(winRoot)
+        btn = Button(win, text=buttonItem.mLayoutName, command=buttonItem.mLayoutCommand)
+        btn.pack(side=LEFT)
+        Label(win, text=labelText, foreground='gray', justify=LEFT).pack(side=LEFT)
+        return btn
+
+    @staticmethod
     def createLabelButtons(winRoot, leftButtons, midLabel, rightButtons):
         win = UiKit.createSubWindow(winRoot)
         if leftButtons is not None and 0 < len(leftButtons):
@@ -234,11 +295,10 @@ class UiKit:
         return lb
 
     @staticmethod
-    def createGap(winRoot, cnt=1):
+    def createGap(winRoot, h=20):
         win = UiKit.createSubWindow(winRoot)
-        for i in range(cnt):
-            lb = Label(win, text='', justify=LEFT)
-            lb.pack(side=LEFT)
+        gapFrame = Frame(win, height=h)
+        gapFrame.pack()
 
     @staticmethod
     def __parseFileName__(name):

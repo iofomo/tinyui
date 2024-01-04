@@ -1,8 +1,9 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @brief:  utils for Properties file w/r
 # @date:   2023.08.10 14:40:50
 
-import os
+import sys, os
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -13,7 +14,8 @@ class PropertiesUtils:
         if not os.path.isfile(pf): return ''
 
         k += '='
-        with open(pf, 'r') as f: lines = f.readlines()
+        with open(pf, 'r') as f:
+            lines = f.readlines()
         for line in lines:
             line = line.strip()
             if len(line) < 3: continue
@@ -26,20 +28,23 @@ class PropertiesUtils:
         k += '='
         newLines = []
         if os.path.isfile(pf):
-            with open(pf, 'r') as f: lines = f.readlines()
+            with open(pf, 'r') as f:
+                lines = f.readlines()
             for line in lines:
                 l = line.strip()
                 if l.startswith(k): continue
                 newLines.append(line)
         newLines.append(k + v + '\n')
-        with open(pf, 'w') as f: f.writelines(newLines)
+        with open(pf, 'w') as f:
+            f.writelines(newLines)
 
     @staticmethod
     def getAll(pf):
         if not os.path.isfile(pf): return ''
 
         items = {}
-        with open(pf, 'r') as f: lines = f.readlines()
+        with open(pf, 'r') as f:
+            lines = f.readlines()
         for line in lines:
             line = line.strip()
             if len(line) < 3: continue

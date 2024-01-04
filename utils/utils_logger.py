@@ -4,36 +4,29 @@
 # @date:   2023.08.10 14:40:50
 
 import traceback, os, sys, ctypes, threading
-from utils.utils_import import ImportUtils
+import binascii
+os.system("") # Unable to explain this, just for Windows cmd color print
 
+from utils.utils_import import ImportUtils
 ImportUtils.initEnv()
 
 
-# --------------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------
 class LoggerUtils:
-    RED = '\033[91m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    BLUE = '\033[94m'
-    RED_GRAY = '\033[95m'
-    BLUE_GRAY = '\033[96m'
-    WHITE = '\033[97m'
+    BLACK = '\033[0;30m'
+    RED = '\033[0;31m' #'\033[91m'
+    GREEN = '\033[0;32m'#'\033[92m'
+    YELLOW = '\033[0;33m'#'\033[93m'
+    BLUE = '\033[0;34m'#'\033[94m'
+    RED_GRAY = '\033[0;35m'#'\033[95m' # 洋红色
+    BLUE_GREEN = '\033[0;36m'#'\033[96m' # 青色, 蓝绿色
+    BLUE_GRAY = '\033[96m' # 淡蓝色
+    WHITE = '\033[0;37m'#'\033[97m'
     END = '\033[0m'
 
     STD_INPUT_HANDLE = -10
-    STD_OUTPUT_HANDLE= -11
+    STD_OUTPUT_HANDLE = -11
     STD_ERROR_HANDLE = -12
-
-    FOREGROUND_BLACK = 0x0
-    FOREGROUND_BLUE = 0x01 # text color contains blue.
-    FOREGROUND_GREEN= 0x02 # text color contains green.
-    FOREGROUND_RED = 0x04 # text color contains red.
-    FOREGROUND_INTENSITY = 0x08 # text color is intensified.
-
-    # BACKGROUND_BLUE = 0x10 # background color contains blue.
-    # BACKGROUND_GREEN= 0x20 # background color contains green.
-    # BACKGROUND_RED = 0x40 # background color contains red.
-    # BACKGROUND_INTENSITY = 0x80 # background color is intensified.
 
     g_os_win = -1
     g_log_file = None
@@ -55,35 +48,39 @@ class LoggerUtils:
         return txt
 
     @staticmethod
-    def printLine(title, txt=None, subTxt=None):
-        if LoggerUtils.isOsWindows():
-            #LoggerUtils.setColor(LoggerUtils.FOREGROUND_GREEN | LoggerUtils.FOREGROUND_INTENSITY)
-            print((title if title is not None else '') + (txt if txt is not None else '') + (subTxt if subTxt is not None else ''))
-            #LoggerUtils.resetColor()
-        else:
-            _title = (LoggerUtils.GREEN + title + LoggerUtils.END) if title is not None else ''
-            _txt = (LoggerUtils.RED_GRAY + txt + LoggerUtils.END) if txt is not None else ''
-            _subTxt = (LoggerUtils.BLUE_GRAY + subTxt + LoggerUtils.END) if subTxt is not None else ''
-            print(_title + _txt + _subTxt)
+    def printColorTexts(text1, color1, text2=None, color2=BLACK, text3=None, color3=BLACK):
+        _text1 = text1 if text1 is not None else ''
+        LoggerUtils.__do_print_color_text__(_text1, color1, False)
+        if text2 is not None:
+            LoggerUtils.__do_print_color_text__(text2, color2, False)
+        if text3 is not None:
+            LoggerUtils.__do_print_color_text__(text3, color3, False)
+        sys.stdout.write('\n')
         sys.stdout.flush()
 
     @staticmethod
-    def info(msg): LoggerUtils.printBlue(msg)
+    def info(msg):
+        LoggerUtils.__do_print_color_text__(msg, LoggerUtils.BLUE)
 
     @staticmethod
-    def i(msg): LoggerUtils.printBlue(msg)
+    def i(msg):
+        LoggerUtils.__do_print_color_text__(msg, LoggerUtils.BLUE)
 
     @staticmethod
-    def light(msg): LoggerUtils.printGreen(msg)
+    def light(msg):
+        LoggerUtils.__do_print_color_text__(msg, LoggerUtils.GREEN)
 
     @staticmethod
-    def warning(msg): LoggerUtils.printYellow(msg)
+    def warning(msg):
+        LoggerUtils.__do_print_color_text__(msg, LoggerUtils.YELLOW)
 
     @staticmethod
-    def warn(msg): LoggerUtils.printYellow(msg)
+    def warn(msg):
+        LoggerUtils.__do_print_color_text__(msg, LoggerUtils.YELLOW)
 
     @staticmethod
-    def w(msg): LoggerUtils.printYellow(msg)
+    def w(msg):
+        LoggerUtils.__do_print_color_text__(msg, LoggerUtils.YELLOW)
 
     @staticmethod
     def error(msg, stack=False):
@@ -107,8 +104,10 @@ class LoggerUtils:
 
     @staticmethod
     def println(*p):
-        if 1 == len(p): print(p[0])
-        else: print(p)
+        if 1 == len(p):
+            print(p[0])
+        else:
+            print(p)
         sys.stdout.flush()
 
     @staticmethod
@@ -117,6 +116,7 @@ class LoggerUtils:
         sys.stdout.flush()
 
     std_out_handle = None
+
     @staticmethod
     def getHandler():
         if LoggerUtils.std_out_handle is None:
@@ -124,64 +124,54 @@ class LoggerUtils:
         return LoggerUtils.std_out_handle
 
     @staticmethod
-    def setColor(color):
-        """(color) -> bit
-        Example: set_cmd_color(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY)
-        """
-        try:
-            return ctypes.windll.kernel32.SetConsoleTextAttribute(LoggerUtils.getHandler(), color)
-        except Exception as e: pass
-
-    @staticmethod
-    def resetColor():
-        LoggerUtils.setColor(LoggerUtils.FOREGROUND_RED | LoggerUtils.FOREGROUND_GREEN | LoggerUtils.FOREGROUND_BLUE)
-
-    @staticmethod
     def printRed(txt):
-        if LoggerUtils.isOsWindows():
-            # LoggerUtils.setColor(LoggerUtils.FOREGROUND_RED | LoggerUtils.FOREGROUND_INTENSITY)
-            print(txt)
-            # LoggerUtils.resetColor()
-        elif isinstance(txt, str) or isinstance(txt, unicode):
-            print(LoggerUtils.RED + txt + LoggerUtils.END)
-        else:
-            print(txt)
-        sys.stdout.flush()
+        LoggerUtils.__do_print_color_text__(txt, LoggerUtils.RED)
 
     @staticmethod
     def printGreen(txt):
-        if LoggerUtils.isOsWindows():
-            # LoggerUtils.setColor(LoggerUtils.FOREGROUND_GREEN | LoggerUtils.FOREGROUND_INTENSITY)
-            print(txt)
-            # LoggerUtils.resetColor()
-        elif isinstance(txt, str) or isinstance(txt, unicode):
-            print(LoggerUtils.GREEN + txt + LoggerUtils.END)
-        else:
-            print(txt)
-        sys.stdout.flush()
+        LoggerUtils.__do_print_color_text__(txt, LoggerUtils.GREEN)
 
     @staticmethod
     def printBlue(txt):
-        if LoggerUtils.isOsWindows():
-            # LoggerUtils.setColor(LoggerUtils.FOREGROUND_BLUE | LoggerUtils.FOREGROUND_INTENSITY)
-            print(txt)
-            # LoggerUtils.resetColor()
-        elif isinstance(txt, str) or isinstance(txt, unicode):
-            print(LoggerUtils.BLUE + txt + LoggerUtils.END)
-        else:
-            print(txt)
-        sys.stdout.flush()
+        LoggerUtils.__do_print_color_text__(txt, LoggerUtils.BLUE)
 
     @staticmethod
     def printYellow(txt):
-        if LoggerUtils.isOsWindows():
-            # LoggerUtils.setColor(LoggerUtils.YELLOW | LoggerUtils.FOREGROUND_INTENSITY)
-            print(txt)
-            # LoggerUtils.resetColor()
-        elif isinstance(txt, str) or isinstance(txt, unicode):
-            print(LoggerUtils.YELLOW + txt + LoggerUtils.END)
+        LoggerUtils.__do_print_color_text__(txt, LoggerUtils.YELLOW)
+
+    @staticmethod
+    def isPrintText(txt):
+        if isinstance(txt, str): return True
+        if sys.version_info.major < 3:
+            try:
+                if isinstance(txt, unicode): return True
+            except Exception as e:
+                pass
+        return False
+
+    @staticmethod
+    def __do_print_color_text__(txt, color_code, flush=True):
+        if LoggerUtils.isPrintText(txt):
+            sys.stdout.write(color_code + txt + LoggerUtils.END)
+            if flush and not txt.endswith('\n') and not txt.endswith('\r'):
+                sys.stdout.write('\n')
         else:
             print(txt)
+        if flush: sys.stdout.flush()
+
+    @staticmethod
+    def hexdump(s):
+        if s is None: return
+        hex_string = binascii.hexlify(s)
+        hex_groups = [hex_string[i:i + 32] for i in range(0, len(hex_string), 32)]
+        ascii_groups = [s[i:i + 16] for i in range(0, len(s), 16)]
+        offset = 0
+        for hex_group, ascii_group in zip(hex_groups, ascii_groups):
+            hex_offset = '{0:08x}'.format(offset)
+            hex_group_formatted = ' '.join(hex_group[i:i + 2] for i in range(0, len(hex_group), 2))
+            ascii_group_formatted = ''.join(char if 32 <= ord(char) < 127 else '.' for char in ascii_group)
+            print("{0}: {1:<47} {2}".format(hex_offset, hex_group_formatted, ascii_group_formatted))
+            offset += 16
         sys.stdout.flush()
 
     @classmethod
@@ -195,24 +185,26 @@ class LoggerUtils:
                     f.seek(cls.g_log_size, 1)
                     while ls.g_log_file is not None:
                         line = f.readline()
-                        if line is None: break# exception
+                        if line is None: break  # exception
                         l = len(line)
-                        if l <= 0: break# finished
+                        if l <= 0: break  # finished
                         cls.g_log_size += l
                         print(line)
-            except Exception as e: pass
+            except Exception as e:
+                pass
 
     @classmethod
     def monitorFile(cls, fname):
-        if cls.g_log_file is None:# create
-            try: os.remove(fname)
-            except Exception as e: pass
+        if cls.g_log_file is None:  # create
+            try:
+                os.remove(fname)
+            except Exception as e:
+                pass
             cls.g_log_size = 0
             cls.g_log_file = fname
             t = threading.Thread(target=LoggerUtils.__monitorLoggerFile__, args=(fname,))
             t.start()
-        else: # has running
-            if cls.g_log_file == fname: return# do nothing
+        elif cls.g_log_file != fname:
             cls.g_log_size = 0
             cls.g_log_file = fname
 
@@ -221,14 +213,81 @@ class LoggerUtils:
         cls.g_log_size = 0
         cls.g_log_file = None
 
+    @staticmethod
+    def formatArgument(arg): return arg.replace('\\', '/') if sys.platform.lower().startswith('win') else arg
+
+    @staticmethod
+    def doPrintTreeLine(line, maxLen):
+        if maxLen <= 0:
+            print(line)
+        else:
+            line = line.strip()
+            ll = line.replace('─', ' ').replace('├', ' ').replace('│', ' ').replace('└', ' ')
+            l = len(ll.decode())
+            l += int((len(ll) - l) / 2)
+            assert l < maxLen, '%d, %d' % (maxLen, l)
+            print(line + ' ' + ('-' * (maxLen - l)))
+
+    @staticmethod
+    def getTreeMaxLen(dir_path, level, maxLevel, indent=''):
+        if 0 < maxLevel and maxLevel < level: return 0
+
+        maxLen = 0
+        files = os.listdir(dir_path)
+        for i, file in enumerate(files):
+            full_path = LoggerUtils.formatArgument(os.path.join(dir_path, file))
+            if os.path.isdir(full_path):
+                l = LoggerUtils.getTreeMaxLen(full_path, level + 1, maxLevel, indent + '    ')
+            else:
+                l = len(indent + '    ' + file)
+            if maxLen < l: maxLen = l
+        return maxLen
+
+    @staticmethod
+    def doPrintTree(dir_path, maxLen, level, maxLevel, indent=''):
+        if 0 < maxLevel and maxLevel < level: return
+
+        files = os.listdir(dir_path)
+        files.sort()
+
+        fcnt = len(files)
+        for i, file in enumerate(files):
+            full_path = LoggerUtils.formatArgument(os.path.join(dir_path, file))
+            is_last = i == fcnt - 1
+            if os.path.isdir(full_path):
+                if is_last:
+                    LoggerUtils.doPrintTreeLine(indent + '└── ' + file, maxLen)
+                    if indent.startswith(' ') or len(indent) <= 0:
+                        LoggerUtils.doPrintTree(full_path, maxLen, level + 1, maxLevel, '│' + indent + '    ')
+                    else:
+                        LoggerUtils.doPrintTree(full_path, maxLen, level + 1, maxLevel, indent + '    ')
+                else:
+                    LoggerUtils.doPrintTreeLine(indent + '├── ' + file, maxLen)
+                    LoggerUtils.doPrintTree(full_path, maxLen, level + 1, maxLevel, indent + '│   ')
+            else:
+                if is_last:
+                    LoggerUtils.doPrintTreeLine(indent + '└── ' + file, maxLen)
+                else:
+                    LoggerUtils.doPrintTreeLine(indent + '├── ' + file, maxLen)
+
+    @staticmethod
+    def printTree(dir_path, maxLevel=0, printLine=False):
+        print(os.path.basename(dir_path))
+        maxLen = LoggerUtils.getTreeMaxLen(dir_path, 1, maxLevel) + 4 if printLine else 0
+        LoggerUtils.doPrintTree(dir_path, maxLen, 1, maxLevel)
+
+
 def run():
     LoggerUtils.println(None)
     LoggerUtils.println('a')
     LoggerUtils.println('a', 'b')
     LoggerUtils.println(['a'], 'b', {'c'})
-    LoggerUtils.printBlue('blue')
-    LoggerUtils.printRed('red')
-    LoggerUtils.printGreen('green')
+    LoggerUtils.printBlue('blue\n')
+    LoggerUtils.printRed('red\n')
+    LoggerUtils.printGreen('green\n')
+    LoggerUtils.printColorTexts("title", LoggerUtils.RED, 'content', LoggerUtils.GREEN, 'information\n', LoggerUtils.BLUE)
+    LoggerUtils.println('done')
+
 
 if __name__ == "__main__":
     run()

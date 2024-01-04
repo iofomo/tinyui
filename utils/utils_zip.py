@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @brief:  utils for zip/unzip file
 # @date:   2023.08.10 14:40:50
@@ -231,11 +232,3 @@ class ZipUtils:
     def isZipFile(fileName):
         if not fileName: return False
         return zipfile.is_zipfile(fileName)
-
-
-def run():
-    pass
-
-
-if __name__ == "__main__":
-    run()

@@ -1,41 +1,87 @@
-# !/usr/bin/framework python
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # @brief:  utils for common
 # @date:   2023.08.10 14:40:50
 
 import os, sys, tempfile, subprocess, threading
+import platform
+
 from utils.utils_logger import LoggerUtils
 
-OS_PLATFORM_LINUX   = 0
+OS_PLATFORM_LINUX = 0
 OS_PLATFORM_WINDOWS = 1
-OS_PLATFORM_MAC     = 2
+OS_PLATFORM_MAC = 2
+
+
 # -------------------------------------------------------------
 class CmnUtils:
     g_os_platform = -1
 
     @staticmethod
-    def isEmpty(s): return s is None or len(s) <= 0
+    def isEmpty(s):
+        return s is None or len(s) <= 0
 
     @classmethod
     def getPlatform(cls):
         if cls.g_os_platform < 0:
             opt = sys.platform.lower()
-            if opt.startswith('win'): cls.g_os_platform = OS_PLATFORM_WINDOWS
-            elif 'darwin' == opt: cls.g_os_platform = OS_PLATFORM_MAC
-            else: cls.g_os_platform = OS_PLATFORM_LINUX
+            if opt.startswith('win'):
+                cls.g_os_platform = OS_PLATFORM_WINDOWS
+            elif 'darwin' == opt:
+                cls.g_os_platform = OS_PLATFORM_MAC
+            else:
+                cls.g_os_platform = OS_PLATFORM_LINUX
         return cls.g_os_platform
 
     @staticmethod
-    def isOsLinux(): return OS_PLATFORM_LINUX == CmnUtils.getPlatform()
+    def isOsLinux():
+        return OS_PLATFORM_LINUX == CmnUtils.getPlatform()
 
     @staticmethod
-    def isOsWindows(): return OS_PLATFORM_WINDOWS == CmnUtils.getPlatform()
+    def isOsWindows():
+        return OS_PLATFORM_WINDOWS == CmnUtils.getPlatform()
 
     @staticmethod
-    def isOsMac(): return OS_PLATFORM_MAC == CmnUtils.getPlatform()
+    def isOsMac():
+        return OS_PLATFORM_MAC == CmnUtils.getPlatform()
 
     @staticmethod
-    def getOSUserPath(): return os.path.expanduser('~')
+    def isX86_32():
+        return CmnUtils.isX86() and CmnUtils.is32BitOS()
+
+    @staticmethod
+    def isX86_64():
+        return CmnUtils.isX86() and CmnUtils.is64BitOS()
+
+    @staticmethod
+    def isArm32():
+        return CmnUtils.isArm() and CmnUtils.is32BitOS()
+
+    @staticmethod
+    def isArm64():
+        return CmnUtils.isArm() and CmnUtils.is64BitOS()
+
+    @staticmethod
+    def isX86():
+        bit = platform.architecture()[0]
+        return 0 <= bit.find('x86')
+
+    @staticmethod
+    def isArm():
+        bit = platform.architecture()[0]
+        return bit.find('x86') < 0
+
+    @staticmethod
+    def is64BitOS():
+        return 0 <= platform.machine().find('64')
+
+    @staticmethod
+    def is32BitOS():
+        return platform.machine().find('64') < 0
+
+    @staticmethod
+    def getOSUserPath():
+        return os.path.expanduser('~')
 
     @staticmethod
     def getOsStuffix():
@@ -51,39 +97,61 @@ class CmnUtils:
         return '"' + arg + '"'
 
     @staticmethod
+    def formatArgument(arg): return arg.replace('\\', '/') if CmnUtils.isOsWindows() else arg
+
+    @staticmethod
+    def formatCommand(cmd):
+        if not CmnUtils.isOsWindows(): return cmd
+        if cmd.startswith('chmod '): return None
+        if cmd.startswith('cd '):
+            pre = cmd[2:].strip()
+            if pre.startswith('"'): pre = pre[1:]
+            cmd = pre[:2] + ' && ' + cmd
+        return cmd
+
+    @staticmethod
     def doCmd(cmd):
-        if CmnUtils.isOsWindows() and cmd.startswith('chmod '): return ''
+        # print(cmd)
+        cmd = CmnUtils.formatCommand(cmd)
+        if cmd is None: return ''
+
         try:
             p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            line, l = '', ' '
-            while l != '' or p.poll() is None:
-                l = p.stdout.readline().decode()
-                line += l
+            line = ''
+            while True:
+                l = p.stdout.readline()
+                if not l: break
+                l = l.decode().strip()
+                if len(l) <= 0: continue
+                line += l + '\n'
             return line
         except Exception as e:
             LoggerUtils.println(e)
         return ''
 
     @staticmethod
-    def doCmd2File(cmd, fname, ignoreEmpty = True):
-        if CmnUtils.isOsWindows() and cmd.startswith('chmod '): return ''
+    def doCmd2File(cmd, fname, ignoreEmpty=True):
+        cmd = CmnUtils.formatCommand(cmd)
+        if cmd is None: return False
+
         try:
-            # print(cmd)
-            # ret = subprocess.check_output(cmd, shell=True)
-            # return ret.decode()
             p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            l = ''
             with open(fname, 'w') as f:
-                while l != '' or p.poll() is None:
-                    l = p.stdout.readline().decode()
-                    f.write(l)
-            return False
+                while True:
+                    line = p.stdout.readline()
+                    if not line: break
+                    line = line.decode().strip()
+                    if len(line) <= 0: continue
+                    f.write(line + '\n')
+            return True
         except Exception as e:
             LoggerUtils.println(e)
         finally:
             if ignoreEmpty and os.path.getsize(fname) <= 0:
-                try: os.remove(fname)
-                except Exception as e: pass
+                try:
+                    os.remove(fname)
+                except Exception as e:
+                    pass
 
         return False
 
@@ -91,7 +159,8 @@ class CmnUtils:
     def doCmdEx(cmd):
         outResults = ''
         errResults = ''
-        if CmnUtils.isOsWindows() and cmd.startswith('chmod '): return outResults, errResults
+        cmd = CmnUtils.formatCommand(cmd)
+        if cmd is None: return outResults, errResults
 
         try:
             stdoutFile = tempfile.TemporaryFile(mode='w+')
@@ -114,35 +183,40 @@ class CmnUtils:
     @staticmethod
     def doCmdCall(cmd):
         isWin = CmnUtils.isOsWindows()
-        if isWin and cmd.startswith('chmod '): return 0
+        cmd = CmnUtils.formatCommand(cmd)
+        if cmd is None: return True
+
         try:
-            # return subprocess.call(cmd, shell=True)
             p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            l = ' '
-            while l != '' or p.poll() is None:
-                l = p.stdout.readline().decode()
-                l = l.strip()
+            while True:
+                line = p.stdout.readline()
+                if not line: break
+                line = line.decode().strip()
+                if len(line) <= 0: continue
                 if isWin:
-                    l1 = l.replace('\n', '').replace('\r', '')
-                    if len(l1) <=0: continue
-                LoggerUtils.println(l)
-            return p.returncode
+                    l1 = line.replace('\n', '').replace('\r', '')
+                    if len(l1) <= 0: continue
+                LoggerUtils.println(line)
+            return p.returncode is None or (p.returncode == 0 or p.returncode == '0')
         except Exception as e:
             LoggerUtils.println(e)
-        return -100
+        return False
 
     @staticmethod
-    def isPy2(): return 2 == sys.version_info.major
+    def isPy2():
+        return 2 == sys.version_info.major
 
     @staticmethod
-    def isPy3(): return 3 <= sys.version_info.major
+    def isPy3():
+        return 3 <= sys.version_info.major
 
     @staticmethod
-    def input(a): return input(a) if CmnUtils.isPy3() else raw_input(a)
+    def input(a):
+        return input(a) if CmnUtils.isPy3() else raw_input(a)
 
     @staticmethod
     def printDivideLine(msg):
-        print ('----- start: %s ---------------------------------------------------------------------------' % msg)
+        print('----- start: %s ---------------------------------------------------------------------------' % msg)
 
     @staticmethod
     def ensurePermits(path, ff):
@@ -150,7 +224,7 @@ class CmnUtils:
 
     @staticmethod
     def ensurePermit(fileName):
-        if CmnUtils.isOsWindows(): return # do nothing
+        if CmnUtils.isOsWindows(): return  # do nothing
         if fileName.find('*') < 0 and not os.path.isfile(fileName): return
         CmnUtils.doCmd('chmod 777 ' + CmnUtils.formatCmdArg(fileName))
 
@@ -158,8 +232,10 @@ class CmnUtils:
     def joinArgs(args):
         cmd = ''
         for arg in args:
-            if 0 < arg.find(' '): cmd += ' "' + arg + '"'
-            else: cmd += ' ' + arg
+            if 0 < arg.find(' '):
+                cmd += ' "' + arg + '"'
+            else:
+                cmd += ' ' + arg
         return cmd
 
     @staticmethod
@@ -172,7 +248,7 @@ class CmnUtils:
     def getHash(v):
         l = len(v)
         if l <= 0: return 0, 0
-        f = ord(v[0])|(ord(v[l>>1]) << 6)|(ord(v[l-1]) << 12)|(l << 20)
+        f = ord(v[0]) | (ord(v[l >> 1]) << 6) | (ord(v[l - 1]) << 12) | (l << 20)
 
         h = g = 0
         for i in range(l):
@@ -184,12 +260,13 @@ class CmnUtils:
 
     @staticmethod
     def runThread(cb, cbArgs, sync=False):
-        th = cmn_thread(cb, cbArgs)
+        th = CmnThread(cb, cbArgs)
         th.start()
-        if sync: th.join() # wait finished
+        if sync: th.join()  # wait finished
         return th
 
     g_os_lang = None
+
     @classmethod
     def isLanguageCN(cls):
         if CmnUtils.isEmpty(cls.g_os_lang):
@@ -227,13 +304,13 @@ class CmnUtils:
         items = ver.split('.')
         if CmnUtils.isEmpty(items):
             vn, vc = '1.0.0', 1
-        elif len(items) <= 1:# 1
+        elif len(items) <= 1:  # 1
             vn, vc = '%s.0.0' % items[0], 1
-        elif len(items) <= 2:# 1.0
+        elif len(items) <= 2:  # 1.0
             vn, vc = '%s.%s.0' % (items[0], items[1]), 1
-        elif len(items) <= 3:# 1.0.0
+        elif len(items) <= 3:  # 1.0.0
             vn, vc = '%s.%s.%s' % (items[0], items[1], items[2]), 1
-        else:# 1.0.0.101
+        else:  # 1.0.0.101
             vn, vc = '%s.%s.%s' % (items[0], items[1], items[2]), int(items[3])
         return vn, vc
 
@@ -270,18 +347,42 @@ class CmnUtils:
                 pp.append(projects[index])
         return pp
 
+    @staticmethod
+    def getJavaVersion():
+        ret = CmnUtils.doCmd('java -version')
+        if CmnUtils.isEmpty(ret): return None
+        s = ret.split('\n')[0].strip()
+        pos = s.find('"')
+        if pos < 0: return None
+        return s[pos+1:-1]
 
-class cmn_thread(threading.Thread):
+
+class CmnThread(threading.Thread):
     def __init__(self, _cb, _cbArgs):
-         threading.Thread.__init__(self)
-         self.th_cb = _cb
-         self.th_args = _cbArgs
+        threading.Thread.__init__(self)
+        self.th_cb = _cb
+        self.th_args = _cbArgs
 
     def run(self):
         self.th_cb(self.th_args)
 
-def run():
-    pass
 
-if __name__ == "__main__":
-    run()
+class CmnProcess:
+
+    def __init__(self, cb):
+        self.callback = cb
+        self.proc = None
+
+    def start(self, arg):
+        import multiprocessing
+        self.proc = multiprocessing.Process(target=self.callback, args=(arg,))
+        self.proc.start()
+
+    def terminate(self):
+        if self.proc == None: return
+        if self.proc.is_alive():
+            self.proc.terminate()
+
+        # wait for quit
+        self.proc.join()
+        self.proc = None

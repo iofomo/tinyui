@@ -3,9 +3,7 @@
 # @brief:  utils for network
 # @date:   2023.09.10 14:40:50
 
-import os
-import sys
-
+import sys, os, tempfile, subprocess
 from utils.utils_cmn import CmnUtils
 
 try:
@@ -13,12 +11,10 @@ try:
 except ImportError:
     import urllib2 as url_request
 
-
-# --------------------------------------------------------------------------------------------------------------------------
-def isWindows():
-    return 'windows' == sys.platform.lower()
+from utils.utils_cmn import CmnUtils
 
 
+# -------------------------------------------------------------
 class NetUtils:
 
     @staticmethod
@@ -41,15 +37,17 @@ class NetUtils:
     @staticmethod
     def downloadContentByWeb(url, header=None):
         try:
-            if header is None and not isWindows():
+            if None == header and not CmnUtils.isOsWindows():
                 _out, _err = CmnUtils.doCmdEx('curl ' + url)
-                if _out is not None: return NetUtils.__convert__(_out)
+                if None != _out: return NetUtils.__convert__(_out)
                 print('curl fail')
 
             nullProxyHandler = url_request.ProxyHandler({})
             opener = url_request.build_opener(nullProxyHandler)
-            if header is None:
-                opener.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36')]
+            if None == header:
+                opener.addheaders = [('User-agent',
+                                      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
+                                      )]
             else:
                 opener.addheaders = header
             response = opener.open(url)
@@ -61,9 +59,9 @@ class NetUtils:
     @staticmethod
     def downloadContent(url):
         try:
-            if not isWindows():
+            if not CmnUtils.isOsWindows():
                 _out, _err = CmnUtils.doCmdEx('curl ' + url)
-                if _out is not None: return NetUtils.__convert__(_out)
+                if None != _out: return NetUtils.__convert__(_out)
                 print('curl fail')
 
             f = url_request.urlopen(url)
@@ -76,18 +74,43 @@ class NetUtils:
     def downloadFile(url, f):
         if os.path.exists(f): os.remove(f)
         try:
-            if not isWindows():
+            if not CmnUtils.isOsWindows():
                 CmnUtils.doCmdEx('curl ' + url + ' > ' + f)
                 if os.path.isfile(f): return True
                 print('curl fail')
 
             net = url_request.urlopen(url)
-            with open(f, "wb") as ff: ff.write(net.read())
+            with open(f, "wb") as ff:
+                ff.write(net.read())
             return os.path.isfile(f)
         except Exception as e:
             print(e)
         if os.path.exists(f): os.remove(f)
         return False
+
+    @staticmethod
+    def downloadFileWithProgress(url, dldFile):
+        response = url_request.urlopen(url)
+        total_size = int(response.headers.get('content-length', 0))
+        block_size = 10240
+
+        with open(dldFile, 'wb') as file:
+            lastMsg = None
+            downloaded_size = 0
+            while True:
+                buffer = response.read(block_size)
+                if not buffer: break
+
+                downloaded_size += len(buffer)
+                file.write(buffer)
+
+                progress = int(50 * downloaded_size / total_size)
+                msg = "[%s%s] %d%%" % ('=' * progress, ' ' * (50 - progress), 2 * progress)
+                if lastMsg == msg: continue
+                lastMsg = msg
+                sys.stdout.write(msg)
+                sys.stdout.write('\n')
+                sys.stdout.flush()
 
     @staticmethod
     def downloadFileByWeb(url, f):
@@ -97,7 +120,8 @@ class NetUtils:
             opener = url_request.build_opener(nullProxyHandler)
             opener.addheaders = [('User-agent', 'Mozilla/5.0')]
             response = opener.open(url)
-            with open(f, "wb") as content: content.write(response.read())
+            with open(f, "wb") as content:
+                content.write(response.read())
             return os.path.isfile(f)
         except Exception as e:
             print(e)

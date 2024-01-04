@@ -12,6 +12,11 @@ try:
 except ImportError:
     from tkinter import *
 
+try:
+    import tkFont as tkfont
+except ImportError:
+    from tkinter import font as tkfont
+
 from framework.cacher import Cacher
 from framework.resource import Resource
 from framework.context import Context
@@ -48,6 +53,7 @@ class FragmentBase:
         self.mWindowRoot.pack(fill=BOTH, expand=1)
         self.mWindow = PanedWindow(winRoot, orient=VERTICAL)
         self.createSubTitle()
+        UiKit.createGap(self.mWindow, 5)
 
     def onResume(self):
         Context.setModulePath(self.mModule.getPath())
@@ -89,7 +95,8 @@ class FragmentBase:
 
     def createSubTitle(self, title=None):
         title = title if title is not None else self.mModule.getTitle()
-        UiKit.createLabel(self.mWindow, '〖　' + title + '　〗')
+        _font = tkfont.Font(family="Helvetica", size=15, weight="bold")
+        UiKit.createLabel(self.mWindow, title, 'left', _font)
 
     def doAsyncActionCall(self, callback, arg, arg2=None, arg3=None):
         if arg2 is None and arg3 is None:
